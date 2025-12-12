@@ -1,24 +1,23 @@
 {
   "form": {
-    "VendorName": "MetalMusings",
-    "VendorID": "0xd0bed1d0",
-    "ProductCode": "0x7000",
+    "VendorName": "Vibram",
+    "VendorID": "4321",
+    "ProductCode": "1234",
     "ProfileNo": "5001",
-    "RevisionNumber": "0x002",
-    "SerialNumber": "0x001",
-    "HWversion": "0.0.1",
-    "SWversion": "0.0.1",
+    "RevisionNumber": "1",
+    "SerialNumber": "2",
+    "HWversion": "3",
+    "SWversion": "4",
     "EEPROMsize": "2048",
     "RxMailboxOffset": "0x1000",
-    "TxMailboxOffset": "0x1200",
-    "MailboxSize": "512",
+    "TxMailboxOffset": "0x1080",
+    "MailboxSize": "128",
     "SM2Offset": "0x1600",
     "SM3Offset": "0x1A00",
-    "TextGroupType": "MachineControl",
-    "TextGroupName5": "Plasma cutter",
-    "ImageName": "IMGCBY",
-    "TextDeviceType": "EaserCAT 7000",
-    "TextDeviceName": "MetalMusings EaserCAT 7000",
+    "TextGroupType": "encoder",
+    "TextGroupName5": "lan9252",
+    "TextDeviceType": "EncoderIn",
+    "TextDeviceName": "2-channel encoder input",
     "Port0Physical": "Y",
     "Port1Physical": "Y",
     "Port2Physical": " ",
@@ -33,211 +32,26 @@
     "CoeDetailsEnableSDOCompleteAccess": "EnableSDOCompleteAccess"
   },
   "od": {
-    "sdo": {
-      "2000": {
-        "otype": "RECORD",
-        "name": "Settings_Unit1",
-        "access": "RO",
-        "items": [
-          {
-            "name": "Max SubIndex"
-          },
-          {
-            "name": "I2C_devicetype",
-            "dtype": "UNSIGNED8",
-            "data": "&Obj.Settings_Unit1.I2C_devicetype",
-            "value": "0",
-            "access": "RW"
-          },
-          {
-            "name": "I2C_address",
-            "dtype": "UNSIGNED8",
-            "value": "0",
-            "access": "RW",
-            "data": "&Obj.Settings_Unit1.I2C_address"
-          },
-          {
-            "name": "LowpassFilterPoleFrequency",
-            "dtype": "UNSIGNED32",
-            "value": "0",
-            "access": "RW",
-            "data": "&Obj.Settings_Unit1.LowpassFilterPoleFrequency"
-          },
-          {
-            "name": "OhmicSensingSetupTime",
-            "dtype": "UNSIGNED16",
-            "value": "100",
-            "access": "RW",
-            "data": "&Obj.Settings_Unit1.OhmicSensingSetupTime"
-          },
-          {
-            "name": "OhmicSensingPulseLength",
-            "dtype": "UNSIGNED16",
-            "value": "5",
-            "access": "RW",
-            "data": "&Obj.Settings_Unit1.OhmicSensingPulseLength"
-          }
-        ],
-        "isSDOitem": true
-      },
-      "A": {
-        "otype": "RECORD",
-        "name": "Error Settings",
-        "access": "RO",
-        "items": [
-          {
-            "name": "Max SubIndex"
-          },
-          {
-            "name": "New record subitem",
-            "dtype": "UNSIGNED8"
-          }
-        ]
-      }
-    },
+    "sdo": {},
     "txpdo": {
       "6000": {
         "otype": "VAR",
-        "name": "Input12",
+        "name": "Counter",
         "access": "RO",
         "pdo_mappings": [
           "txpdo"
         ],
         "dtype": "INTEGER32",
         "value": "0",
-        "data": "&Obj.Input12"
-      },
-      "6001": {
-        "otype": "RECORD",
-        "name": "Out_Unit1",
-        "access": "RO",
-        "items": [
-          {
-            "name": "Max SubIndex"
-          },
-          {
-            "name": "RawData",
-            "dtype": "INTEGER32",
-            "data": "&Obj.Out_Unit1.RawData",
-            "value": "0",
-            "access": "RO"
-          },
-          {
-            "name": "CalculatedVoltage",
-            "dtype": "REAL32",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.Out_Unit1.CalculatedVoltage"
-          },
-          {
-            "name": "Status",
-            "dtype": "UNSIGNED32",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.Out_Unit1.Status"
-          },
-          {
-            "name": "LowpassFilteredVoltage",
-            "dtype": "REAL32",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.Out_Unit1.LowpassFilteredVoltage"
-          },
-          {
-            "name": "OhmicSensingSensed",
-            "dtype": "UNSIGNED8",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.Out_Unit1.OhmicSensingSensed"
-          }
-        ],
-        "pdo_mappings": [
-          "txpdo"
-        ]
+        "data": "&Obj.Counter"
       }
     },
-    "rxpdo": {
-      "7000": {
-        "otype": "VAR",
-        "name": "Output4",
-        "access": "RO",
-        "pdo_mappings": [
-          "rxpdo"
-        ],
-        "dtype": "UNSIGNED8",
-        "value": "0",
-        "data": "&Obj.Output4"
-      },
-      "7001": {
-        "otype": "RECORD",
-        "name": "In_Unit1",
-        "access": "RO",
-        "items": [
-          {
-            "name": "Max SubIndex"
-          },
-          {
-            "name": "VoltageScale",
-            "dtype": "REAL32",
-            "data": "&Obj.In_Unit1.VoltageScale",
-            "value": "0",
-            "access": "RO"
-          },
-          {
-            "name": "VoltageOffset",
-            "dtype": "REAL32",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.In_Unit1.VoltageOffset"
-          },
-          {
-            "name": "LowPassFilterThresholdVoltage",
-            "dtype": "REAL32",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.In_Unit1.LowPassFilterThresholdVoltage"
-          },
-          {
-            "name": "EnableOhmicSensing",
-            "dtype": "UNSIGNED8",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.In_Unit1.EnableOhmicSensing"
-          },
-          {
-            "name": "OhmicSensingVoltageLimit",
-            "dtype": "REAL32",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.In_Unit1.OhmicSensingVoltageLimit"
-          },
-          {
-            "name": "OhmicSensingVoltageDrop",
-            "dtype": "REAL32",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.In_Unit1.OhmicSensingVoltageDrop"
-          }
-        ],
-        "pdo_mappings": [
-          "rxpdo"
-        ]
-      }
-    }
+    "rxpdo": {}
   },
   "dc": [
     {
-      "Name": "SM-Synchron",
-      "Description": "SM-Synchron",
-      "AssignActivate": "#x000",
-      "Sync0cycleTime": "0",
-      "Sync0shiftTime": "0",
-      "Sync1cycleTime": "0",
-      "Sync1shiftTime": "0"
-    },
-    {
-      "Name": "DC",
-      "Description": "DC-Synchron",
+      "Name": "Dc",
+      "Description": "DC-Synchro",
       "AssignActivate": "#x300",
       "Sync0cycleTime": "0",
       "Sync0shiftTime": "0",

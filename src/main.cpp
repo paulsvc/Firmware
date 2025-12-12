@@ -22,6 +22,8 @@ HardwareTimer *MyTim2;
 #define bitflip(byte, nbit) ((byte) ^= (1 << (nbit)))
 #define bitcheck(byte, nbit) ((byte) & (1 << (nbit)))
 
+uint16_t dc_checker(void);
+
 static esc_cfg_t config = {
   .user_arg = NULL,
   .use_interrupt = 1,
@@ -38,6 +40,7 @@ static esc_cfg_t config = {
   .esc_hw_interrupt_enable = NULL,
   .esc_hw_interrupt_disable = NULL,
   .esc_hw_eep_handler = NULL,
+  .esc_check_dc_handler = dc_checker,
 };
 
 void setup(void) {
@@ -98,8 +101,8 @@ void loop(void) {
   // --- READ COUNTER ---
   // You can still use the Arduino method to read the count
   uint32_t currentCount = MyTim2->getCount();
-  // Push encoder count into EtherCAT TX PDO (maps to 0x6000:01 Input12)
-  Obj.Input12 = static_cast<int32_t>(currentCount);
+  // Push encoder count into EtherCAT TX PDO (maps to 0x6000:01 Encoder)
+  Obj.Encoder = static_cast<int32_t>(currentCount);
   
   #ifdef ECAT
   // Call EtherCAT again after updating inputs to ensure TX PDO is sent
@@ -125,4 +128,11 @@ void loop(void) {
   
   //Serial1.println(currentCount);
   //delay(300);  // REMOVED: delay() blocks EtherCAT processing!
+}
+
+// Setup of DC
+uint16_t dc_checker(void) {
+  // Indicate we run DC
+  ESCvar.dcsync = 1;
+  return 0;
 }

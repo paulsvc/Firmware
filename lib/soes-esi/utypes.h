@@ -13,39 +13,8 @@ typedef struct
 
    /* Inputs */
 
-   int32_t Input12;
-   struct
-   {
-      int32_t RawData;
-      float CalculatedVoltage;
-      uint32_t Status;
-      float LowpassFilteredVoltage;
-      uint8_t OhmicSensingSensed;
-   } Out_Unit1;
+   int32_t Encoder;
 
-   /* Outputs */
-
-   uint8_t Output4;
-   struct
-   {
-      float VoltageScale;
-      float VoltageOffset;
-      float LowPassFilterThresholdVoltage;
-      uint8_t EnableOhmicSensing;
-      float OhmicSensingVoltageLimit;
-      float OhmicSensingVoltageDrop;
-   } In_Unit1;
-
-   /* Parameters */
-
-   struct
-   {
-      uint8_t I2C_devicetype;
-      uint8_t I2C_address;
-      uint32_t LowpassFilterPoleFrequency;
-      uint16_t OhmicSensingSetupTime;
-      uint16_t OhmicSensingPulseLength;
-   } Settings_Unit1;
 } _Objects;
 
 extern _Objects Obj;
