@@ -2,8 +2,8 @@
   "form": {
     "VendorName": "MetalMusings",
     "VendorID": "0xd0bed1d0",
-    "ProductCode": "0x3000",
-    "ProfileNo": "5002",
+    "ProductCode": "0x7000",
+    "ProfileNo": "5001",
     "RevisionNumber": "0x002",
     "SerialNumber": "0x001",
     "HWversion": "0.0.1",
@@ -15,15 +15,15 @@
     "SM2Offset": "0x1600",
     "SM3Offset": "0x1A00",
     "TextGroupType": "MachineControl",
-    "TextGroupName5": "CNC control",
+    "TextGroupName5": "Plasma cutter",
     "ImageName": "IMGCBY",
-    "TextDeviceType": "CNC control",
-    "TextDeviceName": "MetalMusings EaserCAT 3000",
+    "TextDeviceType": "EaserCAT 7000",
+    "TextDeviceName": "MetalMusings EaserCAT 7000",
     "Port0Physical": "Y",
     "Port1Physical": "Y",
     "Port2Physical": " ",
     "Port3Physical": " ",
-    "ESC": "AX58100",
+    "ESC": "LAN9252",
     "SPImode": "3",
     "CoeDetailsEnableSDO": "EnableSDO",
     "CoeDetailsEnableSDOInfo": "EnableSDOInfo",
@@ -35,85 +35,50 @@
   "od": {
     "sdo": {
       "2000": {
-        "otype": "VAR",
-        "name": "BasePeriod",
-        "access": "RW",
-        "dtype": "UNSIGNED32",
-        "value": "10000",
-        "isSDOitem": true,
-        "data": "&Obj.BasePeriod"
-      },
-      "2001": {
-        "otype": "VAR",
-        "name": "StepsPerMM1",
-        "access": "RW",
-        "dtype": "REAL32",
-        "value": "200",
-        "isSDOitem": true,
-        "data": "&Obj.StepsPerMM1"
-      },
-      "2002": {
-        "otype": "VAR",
-        "name": "StepsPerMM2",
-        "access": "RW",
-        "dtype": "REAL32",
-        "value": "200",
-        "isSDOitem": true,
-        "data": "&Obj.StepsPerMM2"
-      },
-      "2003": {
-        "otype": "VAR",
-        "name": "StepsPerMM3",
-        "access": "RW",
-        "dtype": "REAL32",
-        "value": "200",
-        "isSDOitem": true,
-        "data": "&Obj.StepsPerMM3"
-      },
-      "2004": {
-        "otype": "VAR",
-        "name": "StepsPerMM4",
-        "access": "RW",
-        "dtype": "REAL32",
-        "value": "200",
-        "isSDOitem": true,
-        "data": "&Obj.StepsPerMM4"
-      },
-      "2005": {
-        "otype": "VAR",
-        "name": "MaxAcceleration1",
-        "access": "RW",
-        "dtype": "REAL32",
-        "value": "1000000000",
-        "isSDOitem": true,
-        "data": "&Obj.MaxAcceleration1"
-      },
-      "2006": {
-        "otype": "VAR",
-        "name": "MaxAcceleration2",
-        "access": "RW",
-        "dtype": "REAL32",
-        "value": "1000000000",
-        "isSDOitem": true,
-        "data": "&Obj.MaxAcceleration2"
-      },
-      "2007": {
-        "otype": "VAR",
-        "name": "MaxAcceleration3",
-        "access": "RW",
-        "dtype": "REAL32",
-        "value": "1000000000",
-        "isSDOitem": true,
-        "data": "&Obj.MaxAcceleration3"
-      },
-      "2008": {
-        "otype": "VAR",
-        "name": "MaxAcceleration4",
-        "access": "RW",
-        "dtype": "REAL32",
-        "value": "1000000000",
-        "isSDOitem": true,
-        "data": "&Obj.MaxAcceleration4"
+        "otype": "RECORD",
+        "name": "Settings_Unit1",
+        "access": "RO",
+        "items": [
+          {
+            "name": "Max SubIndex"
+          },
+          {
+            "name": "I2C_devicetype",
+            "dtype": "UNSIGNED8",
+            "data": "&Obj.Settings_Unit1.I2C_devicetype",
+            "value": "0",
+            "access": "RW"
+          },
+          {
+            "name": "I2C_address",
+            "dtype": "UNSIGNED8",
+            "value": "0",
+            "access": "RW",
+            "data": "&Obj.Settings_Unit1.I2C_address"
+          },
+          {
+            "name": "LowpassFilterPoleFrequency",
+            "dtype": "UNSIGNED32",
+            "value": "0",
+            "access": "RW",
+            "data": "&Obj.Settings_Unit1.LowpassFilterPoleFrequency"
+          },
+          {
+            "name": "OhmicSensingSetupTime",
+            "dtype": "UNSIGNED16",
+            "value": "100",
+            "access": "RW",
+            "data": "&Obj.Settings_Unit1.OhmicSensingSetupTime"
+          },
+          {
+            "name": "OhmicSensingPulseLength",
+            "dtype": "UNSIGNED16",
+            "value": "5",
+            "access": "RW",
+            "data": "&Obj.Settings_Unit1.OhmicSensingPulseLength"
+          }
+        ],
+        "isSDOitem": true
       },
       "A": {
         "otype": "RECORD",
@@ -131,154 +96,68 @@
       }
     },
     "txpdo": {
-      "600": {
+      "6000": {
         "otype": "VAR",
-        "name": "EncFrequency",
+        "name": "Input12",
         "access": "RO",
         "pdo_mappings": [
           "txpdo"
         ],
         "dtype": "INTEGER32",
         "value": "0",
-        "data": "&Obj.EncFrequency"
-      },
-      "6000": {
-        "otype": "VAR",
-        "name": "FrequencyCounterFrequency",
-        "access": "RO",
-        "pdo_mappings": [
-          "txpdo"
-        ],
-        "dtype": "REAL32",
-        "value": "0",
-        "data": "&Obj.FrequencyCounterFrequency"
+        "data": "&Obj.Input12"
       },
       "6001": {
         "otype": "RECORD",
-        "name": "EncoderIn",
+        "name": "Out_Unit1",
         "access": "RO",
         "items": [
           {
             "name": "Max SubIndex"
           },
           {
-            "name": "IndexStatus",
-            "dtype": "UNSIGNED8",
-            "data": "&Obj.EncoderIn.IndexStatus",
+            "name": "RawData",
+            "dtype": "INTEGER32",
+            "data": "&Obj.Out_Unit1.RawData",
             "value": "0",
             "access": "RO"
           },
           {
-            "name": "IndexByte",
+            "name": "CalculatedVoltage",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.Out_Unit1.CalculatedVoltage"
+          },
+          {
+            "name": "Status",
+            "dtype": "UNSIGNED32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.Out_Unit1.Status"
+          },
+          {
+            "name": "LowpassFilteredVoltage",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.Out_Unit1.LowpassFilteredVoltage"
+          },
+          {
+            "name": "OhmicSensingSensed",
             "dtype": "UNSIGNED8",
             "value": "0",
             "access": "RO",
-            "data": "&Obj.EncoderIn.IndexByte"
-          },
-          {
-            "name": "Position",
-            "dtype": "REAL32",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.EncoderIn.Position"
-          },
-          {
-            "name": "Velocity",
-            "dtype": "REAL32",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.EncoderIn.Velocity"
+            "data": "&Obj.Out_Unit1.OhmicSensingSensed"
           }
         ],
         "pdo_mappings": [
           "txpdo"
         ]
-      },
-      "6002": {
-        "otype": "VAR",
-        "name": "Input8",
-        "access": "RO",
-        "pdo_mappings": [
-          "txpdo"
-        ],
-        "dtype": "UNSIGNED8",
-        "value": "0",
-        "data": "&Obj.Input8"
-      },
-      "6003": {
-        "otype": "VAR",
-        "name": "ActualPosition1",
-        "access": "RO",
-        "pdo_mappings": [
-          "txpdo"
-        ],
-        "dtype": "REAL32",
-        "value": "0",
-        "data": "&Obj.ActualPosition1"
-      },
-      "6004": {
-        "otype": "VAR",
-        "name": "ActualPosition2",
-        "access": "RO",
-        "pdo_mappings": [
-          "txpdo"
-        ],
-        "dtype": "REAL32",
-        "value": "0",
-        "data": "&Obj.ActualPosition2"
-      },
-      "6005": {
-        "otype": "VAR",
-        "name": "ActualPosition3",
-        "access": "RO",
-        "pdo_mappings": [
-          "txpdo"
-        ],
-        "dtype": "REAL32",
-        "value": "0",
-        "data": "&Obj.ActualPosition3"
-      },
-      "6006": {
-        "otype": "VAR",
-        "name": "ActualPosition4",
-        "access": "RO",
-        "pdo_mappings": [
-          "txpdo"
-        ],
-        "dtype": "REAL32",
-        "value": "0",
-        "data": "&Obj.ActualPosition4"
       }
     },
     "rxpdo": {
       "7000": {
-        "otype": "RECORD",
-        "name": "EncoderOut",
-        "access": "RO",
-        "items": [
-          {
-            "name": "Max SubIndex"
-          },
-          {
-            "name": "IndexLatchEnable",
-            "dtype": "UNSIGNED8",
-            "data": "&Obj.EncoderOut.IndexLatchEnable",
-            "value": "0",
-            "access": "RO"
-          },
-          {
-            "name": "Scale",
-            "dtype": "REAL32",
-            "value": "0",
-            "access": "RO",
-            "data": "&Obj.EncoderOut.Scale"
-          }
-        ],
-        "pdo_mappings": [
-          "rxpdo"
-        ]
-      },
-      "7001": {
         "otype": "VAR",
         "name": "Output4",
         "access": "RO",
@@ -289,114 +168,60 @@
         "value": "0",
         "data": "&Obj.Output4"
       },
-      "7002": {
-        "otype": "VAR",
-        "name": "Enable1",
+      "7001": {
+        "otype": "RECORD",
+        "name": "In_Unit1",
         "access": "RO",
+        "items": [
+          {
+            "name": "Max SubIndex"
+          },
+          {
+            "name": "VoltageScale",
+            "dtype": "REAL32",
+            "data": "&Obj.In_Unit1.VoltageScale",
+            "value": "0",
+            "access": "RO"
+          },
+          {
+            "name": "VoltageOffset",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.In_Unit1.VoltageOffset"
+          },
+          {
+            "name": "LowPassFilterThresholdVoltage",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.In_Unit1.LowPassFilterThresholdVoltage"
+          },
+          {
+            "name": "EnableOhmicSensing",
+            "dtype": "UNSIGNED8",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.In_Unit1.EnableOhmicSensing"
+          },
+          {
+            "name": "OhmicSensingVoltageLimit",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.In_Unit1.OhmicSensingVoltageLimit"
+          },
+          {
+            "name": "OhmicSensingVoltageDrop",
+            "dtype": "REAL32",
+            "value": "0",
+            "access": "RO",
+            "data": "&Obj.In_Unit1.OhmicSensingVoltageDrop"
+          }
+        ],
         "pdo_mappings": [
           "rxpdo"
-        ],
-        "dtype": "UNSIGNED8",
-        "value": "0",
-        "data": "&Obj.Enable1"
-      },
-      "7003": {
-        "otype": "VAR",
-        "name": "Enable2",
-        "access": "RO",
-        "pdo_mappings": [
-          "rxpdo"
-        ],
-        "dtype": "UNSIGNED8",
-        "value": "0",
-        "data": "&Obj.Enable2"
-      },
-      "7004": {
-        "otype": "VAR",
-        "name": "Enable3",
-        "access": "RO",
-        "pdo_mappings": [
-          "rxpdo"
-        ],
-        "dtype": "UNSIGNED8",
-        "value": "0",
-        "data": "&Obj.Enable3"
-      },
-      "7005": {
-        "otype": "VAR",
-        "name": "Enable4",
-        "access": "RO",
-        "pdo_mappings": [
-          "rxpdo"
-        ],
-        "dtype": "UNSIGNED8",
-        "value": "0",
-        "data": "&Obj.Enable4"
-      },
-      "7006": {
-        "otype": "VAR",
-        "name": "CommandedPosition1",
-        "access": "RO",
-        "pdo_mappings": [
-          "rxpdo"
-        ],
-        "dtype": "REAL32",
-        "value": "0",
-        "data": "&Obj.CommandedPosition1"
-      },
-      "7007": {
-        "otype": "VAR",
-        "name": "CommandedPosition2",
-        "access": "RO",
-        "pdo_mappings": [
-          "rxpdo"
-        ],
-        "dtype": "REAL32",
-        "value": "0",
-        "data": "&Obj.CommandedPosition2"
-      },
-      "7008": {
-        "otype": "VAR",
-        "name": "CommandedPosition3",
-        "access": "RO",
-        "pdo_mappings": [
-          "rxpdo"
-        ],
-        "dtype": "REAL32",
-        "value": "0",
-        "data": "&Obj.CommandedPosition3"
-      },
-      "7009": {
-        "otype": "VAR",
-        "name": "CommandedPosition4",
-        "access": "RO",
-        "pdo_mappings": [
-          "rxpdo"
-        ],
-        "dtype": "REAL32",
-        "value": "0",
-        "data": "&Obj.CommandedPosition4"
-      },
-      "60664": {
-        "otype": "VAR",
-        "name": "ActualPosition",
-        "access": "RO",
-        "pdo_mappings": [
-          "rxpdo"
-        ],
-        "dtype": "INTEGER32",
-        "value": "0"
-      },
-      "700A": {
-        "otype": "VAR",
-        "name": "Voltage",
-        "access": "RO",
-        "pdo_mappings": [
-          "rxpdo"
-        ],
-        "dtype": "REAL32",
-        "value": "0",
-        "data": "&Obj.Voltage"
+        ]
       }
     }
   },
