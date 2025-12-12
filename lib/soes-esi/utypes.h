@@ -13,7 +13,7 @@ typedef struct
 
    /* Inputs */
 
-   int32_t Encoder;
+   int32_t Counter;
 
 } _Objects;
 

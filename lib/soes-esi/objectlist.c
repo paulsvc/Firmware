@@ -13,9 +13,9 @@ static const char acName1018_01[] = "Vendor ID";
 static const char acName1018_02[] = "Product Code";
 static const char acName1018_03[] = "Revision Number";
 static const char acName1018_04[] = "Serial Number";
-static const char acName1A00[] = "Encoder";
+static const char acName1A00[] = "Counter";
 static const char acName1A00_00[] = "Max SubIndex";
-static const char acName1A00_01[] = "Encoder";
+static const char acName1A00_01[] = "Counter";
 static const char acName1C00[] = "Sync Manager Communication Type";
 static const char acName1C00_00[] = "Max SubIndex";
 static const char acName1C00_01[] = "Communications Type SM0";
@@ -25,7 +25,7 @@ static const char acName1C00_04[] = "Communications Type SM3";
 static const char acName1C13[] = "Sync Manager 3 PDO Assignment";
 static const char acName1C13_00[] = "Max SubIndex";
 static const char acName1C13_01[] = "PDO Mapping";
-static const char acName6000[] = "Encoder";
+static const char acName6000[] = "Counter";
 
 const _objd SDO1000[] =
 {
@@ -71,7 +71,7 @@ const _objd SDO1C13[] =
 };
 const _objd SDO6000[] =
 {
-  {0x0, DTYPE_INTEGER32, 32, ATYPE_RO | ATYPE_TXPDO, acName6000, 0, &Obj.Encoder},
+  {0x0, DTYPE_INTEGER32, 32, ATYPE_RO | ATYPE_TXPDO, acName6000, 0, &Obj.Counter},
 };
 
 const _objectlist SDOobjects[] =

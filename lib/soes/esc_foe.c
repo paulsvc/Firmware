@@ -50,7 +50,7 @@ static _FOEvar FOEvar;
  * @return 0= if we succeed, FOE_ERR_NOTFOUND something wrong with filename or
  * password
  */
-static uint32_t FOE_fopen (char *name, uint8_t num_chars, uint32_t pass, uint8_t op)
+static int FOE_fopen (char *name, uint8_t num_chars, uint32_t pass, uint8_t op)
 {
    uint32_t i;
 
@@ -118,9 +118,9 @@ static uint32_t FOE_fopen (char *name, uint8_t num_chars, uint32_t pass, uint8_t
 
  * @return Number of copied bytes.
  */
-static uint32_t FOE_fread (uint8_t * data, uint32_t maxlength)
+static uint16_t FOE_fread (uint8_t * data, uint16_t maxlength)
 {
-   uint32_t ncopied = 0;
+   uint16_t ncopied = 0;
 
    while (maxlength && (FOEvar.fend - FOEvar.fposition))
    {
@@ -144,9 +144,9 @@ static uint32_t FOE_fread (uint8_t * data, uint32_t maxlength)
 
  * @return Number of copied bytes.
  */
-static uint32_t FOE_fwrite (uint8_t *data, uint32_t length)
+static uint16_t FOE_fwrite (uint8_t *data, uint16_t length)
 {
-    uint32_t ncopied = 0;
+    uint16_t ncopied = 0;
     uint32_t failed = 0;
 
     DPRINT("FOE_fwrite\n");
@@ -162,19 +162,12 @@ static uint32_t FOE_fwrite (uint8_t *data, uint32_t length)
           foe_file->address_offset += foe_cfg->buffer_size;
        }
        FOEvar.fposition++;
-       if(failed)
-       {
-          DPRINT("Failed FOE_fwrite ncopied=%"PRIu32"\n", ncopied);
-       }
-       else
-       {
-          ncopied++;
-       }
+       ncopied++;
     }
 
     foe_file->total_size += ncopied;
 
-    DPRINT("FOE_fwrite END with : %"PRIu32"\n",ncopied);
+    DPRINT("FOE_fwrite END with : %d\n",ncopied);
     return ncopied;
 }
 
@@ -234,7 +227,7 @@ static void FOE_abort (uint32_t code)
       }
       /* Nothing we can do if we can't get an outbound mailbox. */
    }
-   DPRINT("FOE_abort: 0x%"PRIX32"\n", code);
+   DPRINT("FOE_abort: 0x%X\n", code);
    FOE_init ();
 }
 
@@ -249,10 +242,10 @@ static void FOE_abort (uint32_t code)
  * @return Number of data bytes written or an error number. Error numbers
  * will be greater than FOE_DATA_SIZE.
  */
-static uint32_t FOE_send_data_packet ()
+static int FOE_send_data_packet ()
 {
    _FOE *foembx;
-   uint32_t data_len;
+   uint16_t data_len;
    uint8_t mbxhandle;
 
    mbxhandle = ESC_claimbuffer ();
@@ -280,7 +273,7 @@ static uint32_t FOE_send_data_packet ()
 
  * @return 0= or error number.
  */
-static uint32_t FOE_send_ack ()
+static int FOE_send_ack ()
 {
    _FOE *foembx;
    uint8_t mbxhandle;
@@ -316,9 +309,9 @@ static uint32_t FOE_send_ack ()
 static void FOE_read ()
 {
    _FOE *foembx;
+   uint32_t data_len;
    uint32_t password;
-   uint32_t res;
-   uint8_t data_len;
+   int res;
 
    if (FOEvar.foestate != FOE_READY)
    {
@@ -329,7 +322,7 @@ static void FOE_read ()
    FOE_init ();
    foembx = (_FOE *) &MBX[0];
    /* Get the length of the file name in octets. */
-   data_len = (uint8_t)(etohs (foembx->mbxheader.length) - ESC_FOEHSIZE);
+   data_len = etohs (foembx->mbxheader.length) - ESC_FOEHSIZE;
    password = etohl (foembx->foeheader.password);
 
    res = FOE_fopen (foembx->filename, data_len, password, FOE_OP_RRQ);
@@ -340,7 +333,7 @@ static void FOE_read ()
        * Attempt to send the packet
        */
       res = FOE_send_data_packet ();
-      if (res <= ESC_FOE_DATA_SIZE)
+      if (res <= (int)ESC_FOE_DATA_SIZE)
       {
          FOEvar.foestate = FOE_WAIT_FOR_ACK;
       }
@@ -360,7 +353,7 @@ static void FOE_read ()
  */
 static void FOE_ack ()
 {
-   uint32_t res;
+   int res;
 
    /* Make sure we're able to take this. */
    if (FOEvar.foestate == FOE_WAIT_FOR_FINAL_ACK)
@@ -375,7 +368,7 @@ static void FOE_ack ()
       return;
    }
    res = FOE_send_data_packet ();
-   if (res < ESC_FOE_DATA_SIZE)
+   if (res < (int)ESC_FOE_DATA_SIZE)
    {
       FOEvar.foestate = FOE_WAIT_FOR_FINAL_ACK;
    }
@@ -393,9 +386,9 @@ static void FOE_ack ()
 static void FOE_write ()
 {
    _FOE *foembx;
+   uint32_t data_len;
    uint32_t password;
-   uint32_t res;
-   uint8_t data_len;
+   int res;
 
    if (FOEvar.foestate != FOE_READY)
    {
@@ -405,7 +398,7 @@ static void FOE_write ()
 
    FOE_init ();
    foembx = (_FOE *) &MBX[0];
-   data_len = (uint8_t)(etohs (foembx->mbxheader.length) - ESC_FOEHSIZE);
+   data_len = etohs (foembx->mbxheader.length) - ESC_FOEHSIZE;
    password = etohl (foembx->foeheader.password);
 
    /* Get an address we can write the file to, if possible. */
@@ -436,8 +429,8 @@ static void FOE_data ()
 {
    _FOE *foembx;
    uint32_t packet;
-   uint32_t data_len, ncopied;
-   uint32_t res;
+   uint16_t data_len, ncopied;
+   int res;
 
    if(FOEvar.foestate != FOE_WAIT_FOR_DATA)
    {
@@ -451,9 +444,7 @@ static void FOE_data ()
 
    if (packet != FOEvar.foepacket)
    {
-      DPRINT("FOE_data packet error, packet: %"PRIu32", foeheader.packet: %"PRIu32"\n",
-            packet,
-            FOEvar.foepacket);
+      DPRINT("FOE_data packet error, packet: %d, foeheader.packet: %d\n",packet,FOEvar.foepacket);
       FOE_abort (FOE_ERR_PACKETNO);
    }
    else if (data_len == 0)
@@ -481,7 +472,7 @@ static void FOE_data ()
          DPRINT("FOE_data data_len == FOE_DATA_SIZE\n");
          if (ncopied != data_len)
          {
-            DPRINT("FOE_data only %"PRIu32" of %"PRIu32" copied\n",ncopied, data_len);
+            DPRINT("FOE_data only %d of %d copied\n",ncopied, data_len);
             FOE_abort (FOE_ERR_PROGERROR);
          }
          res = FOE_send_ack ();
