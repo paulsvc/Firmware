@@ -25,7 +25,7 @@ HardwareTimer *MyTim2;
 static esc_cfg_t config = {
   .user_arg = NULL,
   .use_interrupt = 1,
-  .watchdog_cnt = 150,
+  .watchdog_cnt = 500,  // Increased from 150 to allow more time for processing
   .set_defaults_hook = NULL,
   .pre_state_change_hook = NULL,
   .post_state_change_hook = NULL,
@@ -100,20 +100,29 @@ void loop(void) {
   uint32_t currentCount = MyTim2->getCount();
   // Push encoder count into EtherCAT TX PDO (maps to 0x6000:01 Input12)
   Obj.Input12 = static_cast<int32_t>(currentCount);
-  //Serial1.println(currentCount);
-  //delay(300);
+  
   #ifdef ECAT
+  // Call EtherCAT again after updating inputs to ensure TX PDO is sent
   ecat_slv();
   #endif
+  
   // --- ODD / EVEN LOGIC ---
-  if (currentCount & 1) {
-    // ODD
-    digitalWrite(PIN_ODD_LED, HIGH);
-    digitalWrite(PIN_EVEN_LED, LOW);
-  } 
-  else {
-    // EVEN
-    digitalWrite(PIN_ODD_LED, LOW);
-    digitalWrite(PIN_EVEN_LED, HIGH);
+  // Update LEDs less frequently to reduce loop time
+  static uint32_t ledUpdateCounter = 0;
+  if (++ledUpdateCounter >= 1000) {  // Update LEDs every 1000 loops
+    ledUpdateCounter = 0;
+    if (currentCount & 1) {
+      // ODD
+      digitalWrite(PIN_ODD_LED, HIGH);
+      digitalWrite(PIN_EVEN_LED, LOW);
+    } 
+    else {
+      // EVEN
+      digitalWrite(PIN_ODD_LED, LOW);
+      digitalWrite(PIN_EVEN_LED, HIGH);
+    }
   }
+  
+  //Serial1.println(currentCount);
+  //delay(300);  // REMOVED: delay() blocks EtherCAT processing!
 }
