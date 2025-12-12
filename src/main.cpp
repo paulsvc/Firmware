@@ -1,4 +1,10 @@
 #include <Arduino.h>
+#include <stdio.h>
+extern "C" {
+  #include "ecat_slv.h"
+  #include "utypes.h"
+  };
+  _Objects Obj;
 
 // --- LED PINS ---
 const int PIN_ODD_LED  = PB13;
@@ -11,11 +17,38 @@ const int PIN_EVEN_LED = PB14;
 // --- TIMER OBJECT ---
 HardwareTimer *MyTim2;
 
+#define bitset(byte, nbit) ((byte) |= (1 << (nbit)))
+#define bitclear(byte, nbit) ((byte) &= ~(1 << (nbit)))
+#define bitflip(byte, nbit) ((byte) ^= (1 << (nbit)))
+#define bitcheck(byte, nbit) ((byte) & (1 << (nbit)))
+
+static esc_cfg_t config = {
+  .user_arg = NULL,
+  .use_interrupt = 1,
+  .watchdog_cnt = 150,
+  .set_defaults_hook = NULL,
+  .pre_state_change_hook = NULL,
+  .post_state_change_hook = NULL,
+  .application_hook = NULL,
+  .safeoutput_override = NULL,
+  .pre_object_download_hook = NULL,
+  .post_object_download_hook = NULL,
+  .rxpdo_override = NULL,
+  .txpdo_override = NULL,
+  .esc_hw_interrupt_enable = NULL,
+  .esc_hw_interrupt_disable = NULL,
+  .esc_hw_eep_handler = NULL,
+};
+
 void setup(void) {
   // 1. CONFIGURE LED OUTPUTS
   pinMode(PIN_ODD_LED, OUTPUT);
   pinMode(PIN_EVEN_LED, OUTPUT);
   Serial1.begin(115200);
+
+  #ifdef ECAT
+  ecat_slv_init(&config);
+  #endif
   // 2. INSTANTIATE TIMER
   MyTim2 = new HardwareTimer(TIM2);
 
@@ -65,8 +98,13 @@ void loop(void) {
   // --- READ COUNTER ---
   // You can still use the Arduino method to read the count
   uint32_t currentCount = MyTim2->getCount();
-  Serial1.println(currentCount);
-  delay(300);
+  // Push encoder count into EtherCAT TX PDO (maps to 0x6000:01 Input12)
+  Obj.Input12 = static_cast<int32_t>(currentCount);
+  //Serial1.println(currentCount);
+  //delay(300);
+  #ifdef ECAT
+  ecat_slv();
+  #endif
   // --- ODD / EVEN LOGIC ---
   if (currentCount & 1) {
     // ODD
