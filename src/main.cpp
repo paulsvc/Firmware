@@ -4,11 +4,14 @@ extern "C" {
 #include "ecat_slv.h"
 #include "utypes.h"
 #include "ecat_options.h"
+#include "esc.h"
+#include "spi.hpp"
+#include <SPI.h>
 // Define rxpdo buffer (required when MAX_MAPPINGS_SM2 is 0)
 uint8_t rxpdo[MAX_RXPDO_SIZE] __attribute__((aligned(8)));
 };
 _Objects Obj;
-
+extern SPIClass SPI_2;
 #include "extend32to64.h"
 extend32to64 longTime;
 
@@ -23,7 +26,109 @@ HardwareSerial Serial1(PA10, PA9);
 #define bitflip(byte, nbit) ((byte) ^= (1 << (nbit)))
 #define bitcheck(byte, nbit) ((byte) & (1 << (nbit)))
 
+// --- LED PINS ---
+const int PIN_ODD_LED  = PB13;
+const int PIN_EVEN_LED = PB14;
+
 extern "C" uint32_t ESC_SYNC0cycletime(void);
+extern "C" void ESC_read(uint16_t address, void *buf, uint16_t len);
+
+// --- SPI DIAGNOSTIC FUNCTION ---
+void test_spi_communication(void) {
+  Serial1.println("\n=== SPI Communication Test ===");
+  
+  uint32_t value;
+  uint16_t status16;
+  uint8_t status8;
+  bool spi_ok = true;
+  
+  // Test 1: Read Chip ID/Revision Register (0x050)
+  // Should return 0x9252 for LAN9252
+  Serial1.print("Test 1: Chip ID Register (0x050)... ");
+  ESC_read(0x050, &value, sizeof(value));
+  Serial1.print("Read: 0x");
+  Serial1.println(value, HEX);
+  if ((value & 0xFFFF) == 0x9252) {
+    Serial1.println("  [OK] LAN9252 detected!");
+  } else {
+    Serial1.print("  [FAIL] Expected 0x9252, got 0x");
+    Serial1.println(value & 0xFFFF, HEX);
+    spi_ok = false;
+  }
+  delay(10);
+  
+  // Test 2: Read Byte Test Register (0x064)
+  // Should return 0x87654321
+  Serial1.print("Test 2: Byte Test Register (0x064)... ");
+  ESC_read(0x064, &value, sizeof(value));
+  Serial1.print("Read: 0x");
+  Serial1.println(value, HEX);
+  if (value == 0x87654321) {
+    Serial1.println("  [OK] Byte test passed!");
+  } else {
+    Serial1.print("  [FAIL] Expected 0x87654321, got 0x");
+    Serial1.println(value, HEX);
+    spi_ok = false;
+  }
+  delay(10);
+  
+  // Test 3: Read Hardware Config Register (0x074)
+  // Check READY bit (bit 27)
+  Serial1.print("Test 3: Hardware Config Register (0x074)... ");
+  ESC_read(0x074, &value, sizeof(value));
+  Serial1.print("Read: 0x");
+  Serial1.println(value, HEX);
+  if (value & (1 << 27)) {
+    Serial1.println("  [OK] ESC is READY!");
+  } else {
+    Serial1.println("  [WARN] ESC not ready (bit 27 not set)");
+  }
+  delay(10);
+  
+  // Test 4: Read DL Status (0x0110) - Link Status
+  Serial1.print("Test 4: DL Status Register (0x0110)... ");
+  ESC_read(0x0110, &status16, sizeof(status16));
+  Serial1.print("Read: 0x");
+  Serial1.println(status16, HEX);
+  Serial1.print("  Link Status: ");
+  if (status16 & 0x0001) {
+    Serial1.println("UP");
+  } else {
+    Serial1.println("DOWN");
+  }
+  delay(10);
+  
+  // Test 5: Read AL Status (0x0130)
+  Serial1.print("Test 5: AL Status Register (0x0130)... ");
+  ESC_read(0x0130, &status8, sizeof(status8));
+  Serial1.print("Read: 0x");
+  Serial1.println(status8, HEX);
+  Serial1.print("  State: ");
+  switch(status8 & 0x0F) {
+    case 1: Serial1.println("INIT"); break;
+    case 2: Serial1.println("PREOP"); break;
+    case 4: Serial1.println("SAFEOP"); break;
+    case 8: Serial1.println("OP"); break;
+    default: Serial1.println("UNKNOWN"); break;
+  }
+  delay(10);
+  
+  // Test 6: Read AL Control (0x0120)
+  Serial1.print("Test 6: AL Control Register (0x0120)... ");
+  ESC_read(0x0120, &status8, sizeof(status8));
+  Serial1.print("Read: 0x");
+  Serial1.println(status8, HEX);
+  delay(10);
+  
+  // Summary
+  Serial1.println("\n=== Test Summary ===");
+  if (spi_ok) {
+    Serial1.println("[SUCCESS] SPI communication is working!");
+  } else {
+    Serial1.println("[FAILURE] SPI communication has issues!");
+  }
+  Serial1.println("===================\n");
+}
 
 void cb_set_outputs(void) // Get Master outputs, slave inputs, first operation
 {
@@ -66,6 +171,8 @@ static esc_cfg_t config = {
 
 void setup(void) {
   Serial1.begin(115200);
+  delay(1000);  // Wait for serial to be ready
+  Serial1.println("\n\nEtherCAT Encoder Test - Starting...");
 
   MyTim2 = new HardwareTimer(TIM2);
 
@@ -110,17 +217,45 @@ void setup(void) {
   
   // Start the Encoder Interface
   HAL_TIM_Encoder_Start(htim, TIM_CHANNEL_ALL);
+Serial1.println("\n\nTimer Started");
+// 2. SETUP SPI
+  // This initializes SPI_2 and sets pins
+  spi_setup(); 
+  Serial1.println("SPI Initialized.");
+  // SPI_2.begin();
+  // 3. START ETHERCAT STACK
+  // The Manual Test passed, so this should now work immediately.
+  Serial1.print("Initializing ESC... ");
+  ESC_init(&config); 
+  Serial1.println("DONE.");
 
-
-#ifdef ECAT
+  Serial1.print("Initializing Slave Stack... ");
   ecat_slv_init(&config);
-#endif
+  Serial1.println("DONE.");
+  
+  Serial1.println("--> STATE: SAFE-OP / OP. Ready for TwinCAT scan.");
 
 }
 
 void loop(void) {
 #ifdef ECAT
   ecat_slv();
+  
+  // Periodic SPI test (every 10 seconds)
+  static unsigned long lastTest = 0;
+  if (millis() - lastTest > 10000) {
+    lastTest = millis();
+    test_spi_communication();
+  }
+#else
+  // If ECAT not defined, just print encoder count
+  static unsigned long lastPrint = 0;
+  if (millis() - lastPrint > 1000) {
+    lastPrint = millis();
+    uint32_t count = MyTim2->getCount();
+    Serial1.print("Encoder Count: ");
+    Serial1.println(count);
+  }
 #endif
 }
 

@@ -1,0 +1,96 @@
+[37m21:40:34.870 > 
+[37m21:40:34.871 > === SPI Communication Test ===[37m[37m
+21:40:34.872 > Test 1: Ch[37mi[37mp ID Regis[37mt[37mer (0x050).[37m.[37m. Read: 0x[37m0[37m
+21:40:34.875 >   [FAIL] [37mE[37mxpected 0x[37m9[37m252, got 0x[37m0[37m
+[37m21:40:34.883 > T[37mest 2: B[37my[37mte Test Re[37mg[37mister (0x06[37m4[37m)... Read:[37m [37m0x0
+21:40:34.887 >   [FAI[37mL[37m] Expected[37m [37m0x87654321[37m,[37m got 0x0
+[37m21:40:34.899 > T[37mest 3: H[37ma[37mrdware Con[37mf[37mig Register[37m [37m(0x074)...[37m Read: 0x0
+[37m21:40:34.904 >  [37m [WARN] ES[37mC[37m not ready [37m([37mbit 27 not[37m [37mset)
+[37m21:40:34.912 > T[37mest 4: D[37mL[37m Status Re[37mg[37mister (0x01[37m1[37m0)... Read[37m:[37m 0x5617
+21:40:34.916 >   [37mL[37mink Status[37m:[37m UP
+[37m21:40:34.923 > T[37mest 5: A[37mL[37m Status Re[37mg[37mister (0x01[37m3[37m0)... Read[37m:[37m 0x1
+21:40:34.927 >   Sta[37mt[37me: INIT
+[37m21:40:34.933 > T[37mest 6: A[37mL[37m Control R[37me[37mgister (0x0[37m1[37m20)... Rea[37md[37m: 0x1
+[37m21:40:34.943 > 
+[37m21:40:34.943 > === Test[37m [37mSummary ==[37m=[37m
+21:40:34.945 > [FAILURE][37m [37mSPI commun[37mi[37mcation has [37mi[37mssues!
+21:40:34.948 > ==[37m=[37m===========[37m=[37m====
+21:40:34.950 > 
+[37m21:40:44.868 > 
+[37m21:40:44.868 > === SPI Co[37mm[37mmunication [37mT[37mest ===
+21:40:44.870 > T[37me[37mst 1: Chip [37mI[37mD Register[37m [37m(0x050)... [37mR[37mead: 0x0
+[37m21:40:44.875 >  [37m [FAIL] Exp[37me[37mcted 0x925[37m2[37m, got 0x0
+[37m21:40:44.883 > T[37mest 2: Byt[37me[37m Test Regis[37mter (0x064)[37m.[37m.. Read: 0x[37m0[37m
+21:40:44.887 >   [FAIL][37m [37mExpected 0x[37m8[37m7654321, g[37mo[37mt 0x0
+[37m21:40:44.898 > T[37mest 3: Har[37md[37mware Config[37m [37mRegister ([37m0[37mx074)... Re[37ma[37md: 0x0
+21:40:44.902 >   [37m[[37mWARN] ESC n[37mo[37mt ready (b[37mi[37mt 27 not se[37mt[37m)
+[37m21:40:44.912 > T[37mest 4: DL Status Regis[37mt[37mer (0x0110[37m)[37m... Read: 0[37mx[37m5617
+21:40:44.915 >   Li[37mn[37mk Status: U[37mP[37m
+[37m21:40:44.922 > T[37mest 5: AL [37mS[37mtatus Regis[37mt[37mer (0x0130[37m)[37m... Read: 0[37mx[37m1
+21:40:44.926 >   State[37m:[37m INIT
+[37m21:40:44.933 > T[37mest 6: AL [37mC[37mont[37mr[37mol Register (0x012[37m0[37m)... Read: [37m0[37mx1
+[37m21:40:44.943 > 
+[37m21:40:44.943 > === Test S[37mu[37mmmary ===
+[37m21:40:44.945 > [[37mFAILURE] S[37mP[37mI communic[37ma[37mtion has is[37ms[37mues!
+21:40:44.948 > ====[37m=[37m===========[37m=[37m==
+21:40:44.950 > 
+[37m21:40:54.870 > 
+[37m21:40:54.870 > === SPI C[37mo[37mmmunicatio[37mn[37m Test ===
+[37m21:40:54.873 > T[37mest 1: Chi[37mp[37m ID Registe[37mr[37m (0x050)..[37m.[37m Read: 0x0[37m[37m
+21:40:54.877 >   [FAIL] E[37mx[37mpected 0x92[37m5[37m2, got 0x0[37m[37m
+[37m21:40:54.885 > T[37mest 2: Byt[37me[37m Test Regi[37ms[37mter (0x064)[37m.[37m.. Read: 0x[37m0[37m
+21:40:54.889 >   [FAIL][37m [37mExpected 0[37mx[37m87654321, g[37mo[37mt 0x0
+[37m21:40:54.900 > T[37mest 3: Har[37md[37mware Confi[37mg[37m Register ([37m0[37mx074)... R[37me[37mad: 0x0
+21:40:54.904 >   [37m[[37mWARN] ESC [37mn[37mot ready (b[37mi[37mt 27 not s[37me[37mt)
+[37m21:40:54.912 > T[37mest 4: DL [37mS[37mtatus Regi[37ms[37mter (0x0110[37m)[37m... Read: [37m0[37mx5617
+21:40:54.916 >   Li[37mn[37mk Status: [37mU[37mP
+[37m21:40:54.924 > T[37mest 5: AL [37mS[37mtatus Regi[37ms[37mter (0x0130[37m)[37m... Read: [37m0[37mx1
+21:40:54.928 >   State[37m:[37m INIT
+[37m21:40:54.935 > T[37mest 6: AL [37mC[37montrol Reg[37mi[37mster (0x012[37m0[37m)... Read:[37m [37m0x1
+[37m21:40:54.945 > 
+[37m21:40:54.945 > === Test S[37mu[37mmmary ===[37m
+[37m21:40:54.947 > [FAILURE] S[37mP[37mI communic[37ma[37mtion has is[37ms[37mues!
+21:40:54.950 > ====[37m=[37m===========[37m=[37m==
+21:40:54.952 > 
+[37m21:41:04.873 > 
+[37m21:41:04.874 > === S[37mP[37mI Communic[37ma[37mtion Test =[37m=[37m=
+21:41:04.879 > Test 1:[37m Chip ID Register (0x05[37m0)... Read:[37m [37m0x0
+21:41:04.880 >   [FAI[37mL[37m] Expected[37m [37m0x9252, got[37m [37m0x0
+[37m21:41:04.888 > T[37mest 2: [37mB[37myte Test R[37me[37mgister (0x0[37m6[37m4)... Read[37m:[37m 0x0
+21:41:04.892 >   [FA[37mI[37mL] Expected 0x87654321, got 0x0
+[37m21:41:04.903 > T[37mest 3: [37mH[37mardware Co[37mn[37mfig Registe[37mr[37m (0x074)..[37m.[37m Read: 0x0[37m
+[37m21:41:04.908 >   [WARN] E[37mS[37mC not ready[37m [37m(bit 27 no[37mt[37m set)
+[37m21:41:04.917 > T[37mest 4: [37mD[37mL Status R[37me[37mgister (0x[37m0[37m110)... Rea[37md[37m: 0x0
+21:41:04.921 >   Li[37mn[37mk Status: [37mD[37mOWN
+[37m21:41:04.929 > T[37mest 5: [37mA[37mL Status R[37me[37mgister (0x0[37m1[37m30)... Rea[37md[37m: 0x0
+21:41:04.933 >   St[37ma[37mte: UNKNOW[37mN[37m
+[37m21:41:04.940 > T[37mest 6: [37mA[37mL Control [37mR[37megister (0x[37m0[37m120)... Re[37ma[37md: 0x0
+[37m21:41:04.950 > 
+[37m21:41:04.950 > === Tes[37mt[37m Summary =[37m=[37m=
+21:41:04.952 > [FAILUR[37mE[37m] SPI commu[37mn[37mication has[37m [37missues!
+21:41:04.955 > =[37m=[37m===========[37m=[37m=====
+21:41:04.957 > 
+[37m21:41:14.877 > 
+[37m21:41:14.877 > === [37mS[37mPI Communi[37mc[37mation Test [37m=[37m==
+21:41:14.880 > Test 1:[37m [37mChip ID Re[37mg[37mister (0x05[37m0[37m)... Read:[37m [37m0x0
+21:41:14.884 >   [FA[37mI[37mL] Expected[37m [37m0x9252, go[37mt[37m 0x0
+[37m21:41:14.892 > T[37mest [37m2[37m: Byte Test[37m [37mRegister ([37m0[37mx064)... Re[37ma[37md: 0x0
+21:41:14.896 >   [37m[[37mFAIL] Expec[37mt[37med 0x87654[37m3[37m21, got 0x[37m0[37m
+[37m21:41:14.907 > T[37mest [37m3[37m: Hardware [37mC[37monfig Regi[37ms[37mter (0x074)[37m.[37m.. Read: 0[37mx[37m0
+21:41:14.912 >   [WARN][37m [37mESC not re[37ma[37mdy (bit 27 [37mn[37mot set)
+[37m21:41:14.920 > T[37mest [37m4[37m: DL Status[37m [37mRegister ([37m0[37mx0110)... R[37me[37mad: 0x0
+21:41:14.924 >  [37m [37mLink Status[37m:[37m DOWN
+[37m21:41:14.931 > T[37mest [37m5[37m: AL Status[37m [37mRegister ([37m0[37mx0130)... R[37me[37mad: 0x0
+21:41:14.935 >  [37m [37mState: UNKN[37mO[37mWN
+[37m21:41:14.942 > T[37mest [37m6[37m: AL Contro[37ml[37m Register [37m([37m0x0120)... [37mR[37mead: 0x0
+[37m21:41:14.952 > 
+[37m21:41:14.952 > === [37mT[37mest Summary[37m [37m===
+21:41:14.954 > [FAIL[37mU[37mRE] SPI com[37mm[37munication [37mh[37mas issues![37m
+[37m21:41:14.959 > ==========[37m=[37m========
+21:41:14.959 > 
+[37m21:42:02.232 > 
+[37m21:42:02.233 > === SPI[37m [37mCommunicat[37mi[37mon Test ===[37m[37m
+21:42:02.235 > Test 1: C[37mh[37mip ID Regis[37mt[37mer (0x050)[37m.[37m.. [37m
+[37m21:42:54.169 > 
+21:42:54.169 > Eth[37me[37mrCAT Encoder Test - St[37ma[37mrting...
+21:42:54.171 > I[37mn[37mitializing[37m [37mEtherCAT st[37ma[37mck...

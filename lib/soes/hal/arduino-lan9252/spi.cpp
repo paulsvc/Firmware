@@ -1,5 +1,5 @@
 #include "spi.hpp"
-// #include <Arduino.h>
+#include <Arduino.h>
 #include <SPI.h>
 
 // Create SPI2 instance with pins: MOSI=PC3, MISO=PC2, SCK=PB10
