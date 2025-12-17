@@ -1,10 +1,9 @@
 #include "spi.hpp"
-#include <Arduino.h>
+// #include <Arduino.h>
 #include <SPI.h>
 
-// Create SPI2 instance with pins: MOSI=PC3, MISO=PC2, SCK=PB10
-SPIClass SPI_2(PC3, PC2, PB10);
 
+SPIClass SPI_2(PC3, PC2, PB10); // MOSI=PC3, MISO=PC2, SCK=PB10
 char SCS = ESC_GPIO_Pin_CS;
 
 

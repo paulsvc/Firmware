@@ -1,0 +1,62 @@
+{
+  "form": {
+    "VendorName": "Vibram",
+    "VendorID": "4321",
+    "ProductCode": "1234",
+    "ProfileNo": "5001",
+    "RevisionNumber": "1",
+    "SerialNumber": "2",
+    "HWversion": "3",
+    "SWversion": "4",
+    "EEPROMsize": "2048",
+    "RxMailboxOffset": "0x1000",
+    "TxMailboxOffset": "0x1080",
+    "MailboxSize": "128",
+    "SM2Offset": "0x1600",
+    "SM3Offset": "0x1A00",
+    "TextGroupType": "encoder",
+    "TextGroupName5": "lan9252",
+    "TextDeviceType": "EncoderIn",
+    "TextDeviceName": "2-channel encoder input",
+    "Port0Physical": "Y",
+    "Port1Physical": "Y",
+    "Port2Physical": " ",
+    "Port3Physical": " ",
+    "ESC": "LAN9252",
+    "SPImode": "3",
+    "CoeDetailsEnableSDO": "EnableSDO",
+    "CoeDetailsEnableSDOInfo": "EnableSDOInfo",
+    "CoeDetailsEnablePDOAssign": "EnablePDOAssign",
+    "CoeDetailsEnablePDOConfiguration": "EnablePDOConfiguration",
+    "CoeDetailsEnableUploadAtStartup": "EnableUploadAtStartup",
+    "CoeDetailsEnableSDOCompleteAccess": "EnableSDOCompleteAccess"
+  },
+  "od": {
+    "sdo": {},
+    "txpdo": {
+      "6000": {
+        "otype": "VAR",
+        "name": "Counter",
+        "access": "RO",
+        "pdo_mappings": [
+          "txpdo"
+        ],
+        "dtype": "INTEGER32",
+        "value": "0",
+        "data": "&Obj.Counter"
+      }
+    },
+    "rxpdo": {}
+  },
+  "dc": [
+    {
+      "Name": "Dc",
+      "Description": "DC unused",
+      "AssignActivate": "#x300",
+      "Sync0cycleTime": "0",
+      "Sync0shiftTime": "0",
+      "Sync1cycleTime": "0",
+      "Sync1shiftTime": "0"
+    }
+  ]
+}

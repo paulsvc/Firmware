@@ -3,145 +3,99 @@
 extern "C" {
 #include "ecat_slv.h"
 #include "utypes.h"
-#include "ecat_options.h"
-#include "esc.h"
-#include "spi.hpp"
-#include <SPI.h>
-// Define rxpdo buffer (required when MAX_MAPPINGS_SM2 is 0)
-uint8_t rxpdo[MAX_RXPDO_SIZE] __attribute__((aligned(8)));
 };
 _Objects Obj;
-extern SPIClass SPI_2;
+
 #include "extend32to64.h"
 extend32to64 longTime;
+
+HardwareSerial Serial1(PA10, PA9);
 
 // --- TIMER OBJECT ---
 HardwareTimer *MyTim2;
 
-HardwareSerial Serial1(PA10, PA9);
+uint8_t inputPin[] = {PD15, PD14, PD13, PD12, PD11, PD10,
+                      PD9,  PD8,  PB15, PB14, PB13, PB12};
+uint8_t outputPin[] = {PE10, PE9, PE8, PE7};
+
+const uint32_t I2C_BUS_SPEED = 400000;
+uint32_t I2C_restarts_1 = 0, I2C_restarts_2 = 0;
+const uint8_t MCP3221_TYPE = 1, ADS1014_TYPE = 2;
+int8_t old_I2Cdevice_1 = -1;
+int8_t old_I2Cdevice_2 = -1;
+
+#include "Wire.h"
+TwoWire Wire2(PB11, PB10);
+
+#include "MyMCP3221.h"
+MyMCP3221 *mcp3221_1 = 0;
+MyMCP3221 *mcp3221_2 = 0;
+
+#include "ADS1X15.h"
+ADS1014 *ads1014_1 = 0;
+ADS1014 *ads1014_2 = 0;
+
+void ads1014_reset(ADS1014 *ads) {
+  ads->reset();
+  ads->begin();
+  ads->setGain(1);                 // 1=4.096V
+  ads->setMode(0);                 // 0 continuous
+  ads->setDataRate(6);             // Max for ads101x
+  ads->readADC_Differential_0_1(); // This is the value we are interested in
+}
+
 #include <queue>
+class OhmicSensing {
+public:
+  void handle(uint8_t voltageState, float inVoltage, float limitVoltage,
+              float voltageDropLimit, uint32_t setupTime, uint16_t pulseLength,
+              uint8_t enabled, uint8_t &sensed);
+
+  // private:
+  enum OhmicStates { OHMIC_IDLE, OHMIC_SETUP, OHMIC_PROBE, OHMIC_PULSE };
+  OhmicStates ohmicState = OHMIC_IDLE;
+  uint64_t startTime;
+  uint64_t contactTime;
+  float_t oldVoltage = 0.0;
+  std::queue<float> voltages;
+  float_t refVoltage;
+};
+OhmicSensing Ohm1;
+OhmicSensing Ohm2;
+
+void handleVoltageReader(float scale_in, float offset, float &outVoltage,
+                         int32_t &outRaw, float &oldVoltage, float &oldRaw,
+                         uint8_t devType, int8_t &old_devType,
+                         uint8_t &readStat, uint32_t &outStatus, ADS1014 *&ads,
+                         MyMCP3221 *&mcp, uint8_t I2C_address,
+                         uint32_t &I2C_restarts);
+void lowpassFilter(float &oldLowPassGain,
+                   uint32_t &oldLowpassFilterPoleFrequency,
+                   float &oldLowPassFilteredVoltage,
+                   uint32_t LowpassFilterPoleFrequency,
+                   float LowPassFilterThresholdVoltage, float inVoltage,
+                   float &outFilteredVoltage);
 
 #define bitset(byte, nbit) ((byte) |= (1 << (nbit)))
 #define bitclear(byte, nbit) ((byte) &= ~(1 << (nbit)))
 #define bitflip(byte, nbit) ((byte) ^= (1 << (nbit)))
 #define bitcheck(byte, nbit) ((byte) & (1 << (nbit)))
 
-// --- LED PINS ---
-const int PIN_ODD_LED  = PB13;
-const int PIN_EVEN_LED = PB14;
-
 extern "C" uint32_t ESC_SYNC0cycletime(void);
-extern "C" void ESC_read(uint16_t address, void *buf, uint16_t len);
-
-// --- SPI DIAGNOSTIC FUNCTION ---
-void test_spi_communication(void) {
-  Serial1.println("\n=== SPI Communication Test ===");
-  
-  uint32_t value;
-  uint16_t status16;
-  uint8_t status8;
-  bool spi_ok = true;
-  
-  // Test 1: Read Chip ID/Revision Register (0x050)
-  // Should return 0x9252 for LAN9252
-  Serial1.print("Test 1: Chip ID Register (0x050)... ");
-  ESC_read(0x050, &value, sizeof(value));
-  Serial1.print("Read: 0x");
-  Serial1.println(value, HEX);
-  if ((value & 0xFFFF) == 0x9252) {
-    Serial1.println("  [OK] LAN9252 detected!");
-  } else {
-    Serial1.print("  [FAIL] Expected 0x9252, got 0x");
-    Serial1.println(value & 0xFFFF, HEX);
-    spi_ok = false;
-  }
-  delay(10);
-  
-  // Test 2: Read Byte Test Register (0x064)
-  // Should return 0x87654321
-  Serial1.print("Test 2: Byte Test Register (0x064)... ");
-  ESC_read(0x064, &value, sizeof(value));
-  Serial1.print("Read: 0x");
-  Serial1.println(value, HEX);
-  if (value == 0x87654321) {
-    Serial1.println("  [OK] Byte test passed!");
-  } else {
-    Serial1.print("  [FAIL] Expected 0x87654321, got 0x");
-    Serial1.println(value, HEX);
-    spi_ok = false;
-  }
-  delay(10);
-  
-  // Test 3: Read Hardware Config Register (0x074)
-  // Check READY bit (bit 27)
-  Serial1.print("Test 3: Hardware Config Register (0x074)... ");
-  ESC_read(0x074, &value, sizeof(value));
-  Serial1.print("Read: 0x");
-  Serial1.println(value, HEX);
-  if (value & (1 << 27)) {
-    Serial1.println("  [OK] ESC is READY!");
-  } else {
-    Serial1.println("  [WARN] ESC not ready (bit 27 not set)");
-  }
-  delay(10);
-  
-  // Test 4: Read DL Status (0x0110) - Link Status
-  Serial1.print("Test 4: DL Status Register (0x0110)... ");
-  ESC_read(0x0110, &status16, sizeof(status16));
-  Serial1.print("Read: 0x");
-  Serial1.println(status16, HEX);
-  Serial1.print("  Link Status: ");
-  if (status16 & 0x0001) {
-    Serial1.println("UP");
-  } else {
-    Serial1.println("DOWN");
-  }
-  delay(10);
-  
-  // Test 5: Read AL Status (0x0130)
-  Serial1.print("Test 5: AL Status Register (0x0130)... ");
-  ESC_read(0x0130, &status8, sizeof(status8));
-  Serial1.print("Read: 0x");
-  Serial1.println(status8, HEX);
-  Serial1.print("  State: ");
-  switch(status8 & 0x0F) {
-    case 1: Serial1.println("INIT"); break;
-    case 2: Serial1.println("PREOP"); break;
-    case 4: Serial1.println("SAFEOP"); break;
-    case 8: Serial1.println("OP"); break;
-    default: Serial1.println("UNKNOWN"); break;
-  }
-  delay(10);
-  
-  // Test 6: Read AL Control (0x0120)
-  Serial1.print("Test 6: AL Control Register (0x0120)... ");
-  ESC_read(0x0120, &status8, sizeof(status8));
-  Serial1.print("Read: 0x");
-  Serial1.println(status8, HEX);
-  delay(10);
-  
-  // Summary
-  Serial1.println("\n=== Test Summary ===");
-  if (spi_ok) {
-    Serial1.println("[SUCCESS] SPI communication is working!");
-  } else {
-    Serial1.println("[FAILURE] SPI communication has issues!");
-  }
-  Serial1.println("===================\n");
-}
 
 void cb_set_outputs(void) // Get Master outputs, slave inputs, first operation
 {
   // Update digital output pins
+
 }
 
-
+float oldLowPassGain_1 = 0, oldLowPassGain_2 = 0;
+float oldLowPassFilteredVoltage_1 = 0, oldLowPassFilteredVoltage_2 = 0;
+uint32_t oldLowpassFilterPoleFrequency_1 = 0,
+         oldLowpassFilterPoleFrequency_2 = 0;
 
 void cb_get_inputs(void) // Set Master inputs, slave outputs, last operation
 {
-
-   // 1. Read the Timer Hardware Register directly here
- // We cannot use 'currentCount' from the loop because it is out of scope.
  uint32_t raw_count = MyTim2->getHandle()->Instance->CNT;
 
  // 2. Assign to EtherCAT Object
@@ -171,9 +125,9 @@ static esc_cfg_t config = {
 
 void setup(void) {
   Serial1.begin(115200);
-  delay(1000);  // Wait for serial to be ready
-  Serial1.println("\n\nEtherCAT Encoder Test - Starting...");
 
+
+  
   MyTim2 = new HardwareTimer(TIM2);
 
   // 3. CONFIGURE PINS (Crucial Step)
@@ -218,44 +172,86 @@ void setup(void) {
   // Start the Encoder Interface
   HAL_TIM_Encoder_Start(htim, TIM_CHANNEL_ALL);
 Serial1.println("\n\nTimer Started");
-// 2. SETUP SPI
-  // This initializes SPI_2 and sets pins
-  spi_setup(); 
-  Serial1.println("SPI Initialized.");
-  // SPI_2.begin();
-  // 3. START ETHERCAT STACK
-  // The Manual Test passed, so this should now work immediately.
-  Serial1.print("Initializing ESC... ");
-  ESC_init(&config); 
-  Serial1.println("DONE.");
+  for (int i = 0; i < sizeof(inputPin); i++)
+    pinMode(inputPin[i], INPUT_PULLDOWN);
+  for (int i = 0; i < sizeof(outputPin); i++) {
+    pinMode(outputPin[i], OUTPUT);
+    digitalWrite(outputPin[i], LOW);
+  }
+  // Debug leds
+  pinMode(PB4, OUTPUT);
+  pinMode(PB5, OUTPUT);
+  pinMode(PB6, OUTPUT);
+  pinMode(PB7, OUTPUT);
+  digitalWrite(PB4, LOW);
+  digitalWrite(PB5, LOW);
+  digitalWrite(PB6, LOW);
+  digitalWrite(PB7, LOW);
 
-  Serial1.print("Initializing Slave Stack... ");
+  Wire2.begin();
+  Wire2.setClock(I2C_BUS_SPEED);
+
+#ifdef ECAT
   ecat_slv_init(&config);
-  Serial1.println("DONE.");
-  
-  Serial1.println("--> STATE: SAFE-OP / OP. Ready for TwinCAT scan.");
+#endif
 
+#if 0 // Uncomment for commissioning tests
+// #define only one of the below
+#define ADS1xxx
+#undef ADC_MCP3221
+   digitalWrite(outputPin[0], HIGH); // All four output leds should go high
+   digitalWrite(outputPin[1], HIGH);
+   digitalWrite(outputPin[2], HIGH);
+   digitalWrite(outputPin[3], HIGH);
+#ifdef ADC_MCP3221
+   mcp3221 = new MyMCP3221(0x48, &Wire2);
+#endif
+#ifdef ADS1xxx
+   ads1014_1 = new ADS1014(0x48, &Wire2);
+   ads1014_reset(ads1014_1);
+#endif
+   while (1) // Search I2C bus for devices
+   {
+      int nDevices = 0;
+      for (int i2caddr = 1; i2caddr < 127; i2caddr++)
+      {
+         Wire2.beginTransmission(i2caddr);
+         int stat = Wire2.endTransmission();
+         if (stat == 0)
+         {
+            Serial1.printf("I2C device found at address 0x%02x\n", i2caddr);
+            nDevices++;
+         }
+      }
+      if (!nDevices)
+         Serial1.printf("No devices\n");
+#ifdef ADC_MCP3221
+      Serial1.printf("I2C status=%d rawdata=%d ", mcp3221->ping(), mcp3221->getData());
+#endif
+#ifdef ADS1xxx
+      //     else Serial1.printf("I2C status=%d rawdata=%d pin0=%d pin1=%d\n", ads1014.isConnected() ? 0 : -1, ads1014.readADC_Differential_0_1(), ads1014.readADC(0), ads1014.readADC(1));
+      //    Serial1.println(ads1014.toVoltage(ads1014.readADC_Differential_0_1()), 5);
+      for (int i = 0; i < 10; i++)
+         Serial1.println(ads1014_1->getValue());
+      int dummy = 0;
+      uint32_t then = micros();
+      for (int i = 0; i < 1000; i++)
+         dummy += ads1014_1->getValue();
+      uint32_t now = micros();
+      Serial1.printf("1000 I2C readings take %d microseconds\n", now - then);
+      Serial1.println(ads1014_1->toVoltage(ads1014_1->getValue()), 4);
+#endif
+      for (int i = 0; i < 12; i++)
+         Serial1.printf("%u", digitalRead(inputPin[i]));
+      Serial1.println();
+      delay(1000);
+   }
+#endif
 }
 
 void loop(void) {
 #ifdef ECAT
   ecat_slv();
-  
-  // Periodic SPI test (every 10 seconds)
-  static unsigned long lastTest = 0;
-  if (millis() - lastTest > 10000) {
-    lastTest = millis();
-    test_spi_communication();
-  }
-#else
-  // If ECAT not defined, just print encoder count
-  static unsigned long lastPrint = 0;
-  if (millis() - lastPrint > 1000) {
-    lastPrint = millis();
-    uint32_t count = MyTim2->getCount();
-    Serial1.print("Encoder Count: ");
-    Serial1.println(count);
-  }
 #endif
 }
 
@@ -266,3 +262,192 @@ uint16_t dc_checker(void) {
   return 0;
 }
 
+void handleVoltageReader(float scale_in, float offset, float &outVoltage,
+                         int32_t &outRaw, float &oldVoltage, float &oldRaw,
+                         uint8_t devType, int8_t &old_devType,
+                         uint8_t &readStat, uint32_t &outStatus, ADS1014 *&ads,
+                         MyMCP3221 *&mcp, uint8_t I2C_address,
+                         uint32_t &I2C_restarts) {
+  float scale = scale_in;
+  if (scale == 0.0)
+    scale = 1.0;
+  int stat = 1, data0;
+
+  switch (devType) {
+  case 0: // Not configured.
+    outStatus = 0;
+    stat = data0 = 0;
+    break;
+  case MCP3221_TYPE:
+    if (old_devType != devType) // Initilize and make ready
+    {
+      if (ads) {
+        delete ads;
+        ads = 0;
+      }
+      if (mcp) {
+        delete mcp;
+        mcp = 0;
+      }
+      Wire2.end();
+      Wire2.begin();
+      Wire2.setClock(I2C_BUS_SPEED);
+      mcp = new MyMCP3221(I2C_address, &Wire2);
+      old_devType = mcp ? MCP3221_TYPE : -1;
+    }
+    data0 = mcp->getData();
+    stat = mcp->ping();
+    break;
+  case ADS1014_TYPE:
+    if (old_devType != devType) // Initilize and make ready
+    {
+      if (ads) {
+        delete ads;
+        ads = 0;
+      }
+      if (mcp) {
+        delete mcp;
+        mcp = 0;
+      }
+      old_devType = 0;
+
+      Wire2.end();
+      Wire2.begin();
+      Wire2.setClock(I2C_BUS_SPEED);
+      ads = new ADS1014(I2C_address, &Wire2);
+      if (ads != nullptr) {
+        ads1014_reset(ads);
+        old_devType = ADS1014_TYPE;
+      }
+    }
+    if (ads != nullptr) {
+      data0 = ads->getValue();
+      stat = ads->isConnected() == 1 ? 0 : 1;
+    }
+    break;
+  default: // Not supported
+    break;
+  }
+
+  if (stat == 0) {                       // Read good value
+    outVoltage = scale * data0 + offset; //
+    outRaw = data0;                      // Raw voltage, read by ADC
+    oldVoltage = outVoltage;
+    oldRaw = data0;
+  } else { // Didn't read a good value. Return a hopefully useful value and
+           // restart
+           // the I2C bus
+    outVoltage = oldVoltage; // Use value from previous call
+    outRaw = oldRaw;
+    // Reset wire here
+    Wire2.end();
+    Wire2.begin();
+    Wire2.setClock(I2C_BUS_SPEED);
+    I2C_restarts++;
+    if (devType == ADS1014_TYPE && ads != nullptr)
+      ads1014_reset(ads);
+    // mcp3221 has no reset, reset the I2C bus is the best we can do
+  }
+  readStat = stat;
+  outStatus =
+      I2C_restarts + (stat << 28); // Put status as bits 28-31, the lower are
+                                   // number of restarts (restart attempts)
+}
+
+void lowpassFilter(float &oldLowPassGain,
+                   uint32_t &oldLowpassFilterPoleFrequency,
+                   float &oldLowPassFilteredVoltage,
+                   uint32_t LowpassFilterPoleFrequency,
+                   float LowPassFilterThresholdVoltage, float inVoltage,
+                   float &outFilteredVoltage) {
+  // Low pass filter. See lowpass in linuxcnc doc
+  float gain = oldLowPassGain;
+  if (oldLowpassFilterPoleFrequency != LowpassFilterPoleFrequency) {
+    gain = 1 - expf(-2.0 * M_PI * LowpassFilterPoleFrequency *
+                    0.001 /*1.0e-9 * ESC_SYNC0cycletime()*/);
+    oldLowPassGain = gain;
+    oldLowpassFilterPoleFrequency = LowpassFilterPoleFrequency;
+  }
+  if (inVoltage < LowPassFilterThresholdVoltage)
+    outFilteredVoltage = inVoltage; // Just forward
+  else
+    outFilteredVoltage = oldLowPassFilteredVoltage +
+                         (inVoltage - oldLowPassFilteredVoltage) * gain;
+  oldLowPassFilteredVoltage = outFilteredVoltage;
+}
+
+#define N_VOLTAGES 3
+void OhmicSensing::handle(uint8_t voltageState, float inVoltage,
+                          float limitVoltage, float voltageDropLimit,
+                          uint32_t setupTime, uint16_t pulseLength,
+                          uint8_t enabled, uint8_t &sensed) {
+  sensed = 0;
+  uint64_t dTime;
+  //Obj.Out_Unit1.RawData = ohmicState;
+  if (enabled && voltageState == 0) {
+    if (ohmicState == OHMIC_IDLE && inVoltage > limitVoltage) {
+      ohmicState = OHMIC_SETUP;
+      startTime = longTime.extendTime(micros());
+      while (!voltages.empty())
+        voltages.pop(); // Remove history
+    }
+    switch (ohmicState) {
+    case OHMIC_SETUP:
+      dTime = longTime.extendTime(micros()) - startTime;
+      if (dTime > setupTime * 1000) {
+        ohmicState = OHMIC_PROBE;
+        startTime = longTime.extendTime(micros());
+        oldVoltage = 0.0;
+        refVoltage = inVoltage; // RefVoltage = voltage at end of setup
+      }
+      break;
+    case OHMIC_PROBE: {
+      dTime = longTime.extendTime(micros()) - startTime;
+      voltages.push(inVoltage);
+      while (voltages.size() > N_VOLTAGES)
+        voltages.pop();       // Only N_VOLTAGES
+      if (dTime > 30000000) { // Go to IDLE after 30 seconds
+        ohmicState = OHMIC_IDLE;
+        return;
+      }
+      byte c1 = (inVoltage <= limitVoltage) ? 1 : 0; // Below starting threshold
+
+      byte c2 = (fabs(voltageDropLimit) > 1e-3 &&
+                 refVoltage - inVoltage >= voltageDropLimit)
+                    ? 2
+                    : 0;                          // Delta below refVoltage
+      byte c3 = (fabs(voltageDropLimit) > 1e-3 && // Immediate drop
+                 oldVoltage - inVoltage >= voltageDropLimit)
+                    ? 4
+                    : 0;
+      byte c4 = (fabs(voltageDropLimit) > 1e-3 && // Drop over 3 cycles
+                 voltages.front() - voltages.back() > voltageDropLimit)
+                    ? 8
+                    : 0;
+      //Obj.Out_Unit2.RawData = c1 + c2 + c3 + c4;
+      if (c1 + c2 + c3 + c4 > 0) {
+        if (pulseLength == 0) { // Real pulse length
+          sensed = 1;
+        } else { // Timed pulse length
+          contactTime = longTime.extendTime(micros());
+          sensed = 1;
+          ohmicState = OHMIC_PULSE;
+        }
+      }
+    }
+      oldVoltage = inVoltage;
+      break;
+    case OHMIC_PULSE: // For a pulse with a set length
+      int dTime = longTime.extendTime(micros()) - contactTime;
+      if (dTime < pulseLength * 1000) {
+        sensed = 1;
+      } else {
+        sensed = 0;
+        ohmicState = OHMIC_IDLE;
+      }
+      break;
+    }
+  } else {
+    ohmicState = OHMIC_IDLE;
+  }
+}
