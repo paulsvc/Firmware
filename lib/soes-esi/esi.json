@@ -16,6 +16,7 @@
     "SM3Offset": "0x1A00",
     "TextGroupType": "encoder",
     "TextGroupName5": "lan9252",
+    "ImageName": "IMGCBY",
     "TextDeviceType": "EncoderIn",
     "TextDeviceName": "2-channel encoder input",
     "Port0Physical": "Y",
@@ -46,7 +47,26 @@
         "data": "&Obj.Counter"
       }
     },
-    "rxpdo": {}
+    "rxpdo": {
+      "7000": {
+        "otype": "RECORD",
+        "name": "New Record",
+        "access": "RO",
+        "items": [
+          {
+            "name": "Max SubIndex"
+          },
+          {
+            "name": "New record subitem",
+            "dtype": "UNSIGNED8",
+            "data": "&Obj.New_Record.New_record_subitem"
+          }
+        ],
+        "pdo_mappings": [
+          "rxpdo"
+        ]
+      }
+    }
   },
   "dc": [
     {

@@ -15,6 +15,13 @@ typedef struct
 
    int32_t Counter;
 
+   /* Outputs */
+
+   struct
+   {
+      uint8_t New_record_subitem;
+   } New_Record;
+
 } _Objects;
 
 extern _Objects Obj;

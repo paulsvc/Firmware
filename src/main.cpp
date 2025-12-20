@@ -6,6 +6,10 @@ extern "C" {
 };
 _Objects Obj;
 
+// Definition of rxpdo needed when MAX_MAPPINGS_SM2 is 0
+/*uint8_t rxpdo_buffer[512];
+uint8_t *rxpdo = rxpdo_buffer;
+*/
 #include "extend32to64.h"
 extend32to64 longTime;
 
